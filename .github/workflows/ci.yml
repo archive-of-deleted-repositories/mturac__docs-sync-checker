@@ -1,0 +1,65 @@
+name: Validate Plugin Structure
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check plugin.json exists
+        run: test -f .claude-plugin/plugin.json
+
+      - name: Check marketplace.json exists
+        run: test -f .claude-plugin/marketplace.json
+
+      - name: Validate plugin.json structure
+        run: |
+          node -e "
+            const p = JSON.parse(require('fs').readFileSync('.claude-plugin/plugin.json', 'utf8'));
+            if (!p.name) throw new Error('Missing name');
+            if (!p.version) throw new Error('Missing version');
+            if (!Array.isArray(p.skills)) throw new Error('skills must be array');
+            if (!Array.isArray(p.commands)) throw new Error('commands must be array');
+            console.log('plugin.json valid:', p.name, p.version);
+          "
+
+      - name: Check all declared skills exist
+        run: |
+          node -e "
+            const p = JSON.parse(require('fs').readFileSync('.claude-plugin/plugin.json', 'utf8'));
+            const fs = require('fs');
+            p.skills.forEach(s => {
+              const path = s + '/SKILL.md';
+              if (!fs.existsSync(path)) throw new Error('Missing skill: ' + path);
+              console.log('Found:', path);
+            });
+          "
+
+      - name: Check all declared commands exist
+        run: |
+          node -e "
+            const p = JSON.parse(require('fs').readFileSync('.claude-plugin/plugin.json', 'utf8'));
+            const fs = require('fs');
+            p.commands.forEach(c => {
+              const path = c + '.md';
+              if (!fs.existsSync(path)) throw new Error('Missing command: ' + path);
+              console.log('Found:', path);
+            });
+          "
+
+      - name: Check README exists
+        run: test -f README.md
+
+      - name: Validate marketplace.json keywords
+        run: |
+          node -e "
+            const m = JSON.parse(require('fs').readFileSync('.claude-plugin/marketplace.json', 'utf8'));
+            if (!Array.isArray(m.keywords) || m.keywords.length === 0) throw new Error('keywords must be non-empty array');
+            console.log('marketplace.json valid, keywords:', m.keywords.join(', '));
+          "

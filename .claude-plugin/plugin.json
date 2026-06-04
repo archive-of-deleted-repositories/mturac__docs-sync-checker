@@ -1,0 +1,19 @@
+{
+  "name": "docs-sync-checker",
+  "version": "0.1.0",
+  "author": {
+    "name": "mturac"
+  },
+  "description": "Detect documentation drift — when docs describe code that no longer exists or works differently.",
+  "skills": [
+    "skills/docs-scan",
+    "skills/docs-fix",
+    "skills/docs-coverage"
+  ],
+  "commands": [
+    "commands/docs-sync",
+    "commands/docs-sync-scan",
+    "commands/docs-sync-fix",
+    "commands/docs-coverage"
+  ]
+}
